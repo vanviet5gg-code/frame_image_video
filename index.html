@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phân cảnh Video</title>
+    <style>
+      :root {
+        --primary-color: #4285f4;
+        --secondary-color: #34a853;
+        --background-color: #f8f9fa;
+        --surface-color: #ffffff;
+        --text-color: #202124;
+        --border-color: #dadce0;
+        --font-family: 'Roboto', 'Arial', sans-serif;
+        --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        --border-radius: 8px;
+      }
+
+      body {
+        font-family: var(--font-family);
+        background-color: var(--background-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+      }
+
+      #root {
+        width: 100%;
+        max-width: 1200px;
+      }
+      
+      .main-container {
+        display: grid;
+        grid-template-columns: 400px 1fr;
+        gap: 24px;
+        width: 100%;
+      }
+
+      @media (max-width: 900px) {
+        .main-container {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        background-color: var(--surface-color);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 24px;
+      }
+
+      .control-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .result-panel {
+        min-height: 400px;
+      }
+      
+      h1, h2 {
+        color: var(--primary-color);
+        margin-top: 0;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      label {
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      textarea, input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-family: var(--font-family);
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+
+      .action-button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s, box-shadow 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .action-button:hover {
+        background-color: #3367d6;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .action-button:disabled {
+        background-color: #a0c3ff;
+        cursor: not-allowed;
+      }
+      
+      #video-preview {
+          width: 100%;
+          border-radius: 4px;
+          border: 1px solid var(--border-color);
+          max-height: 300px;
+      }
+
+      .result-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 16px;
+      }
+
+      .result-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+      }
+
+      .result-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      
+      .result-item-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px;
+        transform: translateY(100%);
+        transition: transform 0.3s ease-in-out;
+      }
+
+      .result-item:hover .result-item-overlay {
+        transform: translateY(0);
+      }
+      
+      .overlay-button {
+        background: none;
+        border: 1px solid white;
+        color: white;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .overlay-button:hover {
+        background-color: rgba(255,255,255,0.2);
+      }
+
+      .placeholder, .status-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        color: #5f6368;
+        text-align: center;
+      }
+      
+      .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border-left-color: var(--primary-color);
+        animation: spin 1s ease infinite;
+        margin-bottom: 16px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error-message {
+          color: #d93025;
+          background-color: #fce8e6;
+          padding: 12px;
+          border-radius: 4px;
+          border: 1px solid #f9ab9f;
+          word-break: break-word;
+      }
+
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.26.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
